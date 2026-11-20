@@ -23,7 +23,7 @@ Useful flags: `generate_data.py --n-train/--n-val/--seed/--out`,
 `train.py --epochs/--lr/--batch-size`.
 
 ## Files
-- `generate_data.py` – draws random shapes (colour, size from 10–100% of the frame, position, rotation, filled/outline, noise).
+- `generate_data.py` – draws random shapes (color, size from 10–100% of the frame, position, rotation, filled/outline, noise).
 - `model.py` – `TinyCNN`: 4 × (conv3×3 → BatchNorm → ReLU → maxpool), global avg pool, linear.
 - `train.py` – loads the dataset into memory, trains with Adam + cosine LR and flip/rot90 augmentation.
 - `predict.py` – classifies one image and prints class probabilities.
