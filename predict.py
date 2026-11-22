@@ -5,10 +5,9 @@ import torch
 from PIL import Image, ImageOps
 from torchvision import transforms
 
+from config import MEAN, MODEL_PATH, SIZE, STD
 from model import TinyCNN
-from train import MEAN, STD
-
-SIZE = 64
+from train import check_preprocess, load_checkpoint
 
 
 def border_color(img):
@@ -39,10 +38,11 @@ def load_image(path):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("image")
-    p.add_argument("--weights", default="shape_cnn.pt")
+    p.add_argument("--weights", default=MODEL_PATH)
     args = p.parse_args()
 
-    ckpt = torch.load(args.weights, map_location="cpu")
+    ckpt = load_checkpoint(args.weights)
+    check_preprocess(ckpt, args.weights)
     classes = ckpt["classes"]
     model = TinyCNN(len(classes))
     model.load_state_dict(ckpt["state_dict"])
@@ -54,9 +54,16 @@ def main():
         probs = model(x).softmax(1)[0]
 
     best = probs.argmax().item()
-    print(f"prediction: {classes[best]} ({probs[best]:.1%})")
+    thresholds = ckpt.get("thresholds")
+    verdict = ""
+    if thresholds:
+        bar = thresholds[best]
+        verdict = ("  accepted" if probs[best] >= bar else
+                   f"  UNSURE - below the {bar:.2f} bar tuned for {classes[best]}")
+    print(f"prediction: {classes[best]} ({probs[best]:.1%}){verdict}")
+    w = max(len(c) for c in classes)
     for c, pr in sorted(zip(classes, probs.tolist()), key=lambda t: -t[1]):
-        print(f"  {c:10s} {pr:.3f}")
+        print(f"  {c:{w}s} {pr:.3f}")
 
 
 if __name__ == "__main__":

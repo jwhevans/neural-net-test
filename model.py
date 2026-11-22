@@ -2,9 +2,13 @@ import torch.nn as nn
 
 
 class TinyCNN(nn.Module):
-    """Four conv blocks + global average pool + linear head (~24k params)."""
+    """Four conv blocks + global average pool + linear head.
 
-    def __init__(self, num_classes=4):
+    28,581 parameters with the default 5 classes (the saved checkpoint holds a
+    few more tensors because BatchNorm also stores running mean/var).
+    """
+
+    def __init__(self, num_classes=5):
         super().__init__()
 
         def block(c_in, c_out):
